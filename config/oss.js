@@ -49,10 +49,20 @@ async function uploadCoverBuffer(file){
     }
 }
 
+async function getImgURL(img){
+    try {
+        const signUrl  = await client.signatureUrl('/imgs/blogs-cover/'+img);
+        return signUrl
+    }catch (e) {
+        
+    }
+}
+
 module.exports={
     listBuckets,
     list,
     getCoverImgURL,
     uploadBlogBuffer,
-    uploadCoverBuffer
+    uploadCoverBuffer,
+    getImgURL
 }
