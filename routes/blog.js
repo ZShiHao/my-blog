@@ -1,7 +1,7 @@
 const express=require('express')
 const multer=require('multer')
+const bodyParser = require('body-parser')
 const md=require('../config/md')
-const fsPromises=require('node:fs/promises')
 const {connectBlog}=require('../config/db')
 const {getCoverImgURL,list,uploadBlogBuffer,uploadCoverBuffer,getImgURL}=require('../config/oss')
 const {ObjectID, ObjectId} = require("mongodb");
@@ -14,24 +14,39 @@ const upload=multer({
     },
 })
 
+// status接口处理跨域
+// router.options('/', (req,res)=>{
+//     res.header("Access-Control-Allow-Origin", "*");
+//     res.header("Access-Control-Allow-Methods", "POST,DELETE");
+//     res.header("Access-Control-Allow-Headers", "Content-Type");
+//     res.send()
+// })
 
-router.post('/status',async (req,res)=>{
+
+router.post('/status',bodyParser.json(),async (req,res)=>{
+    console.log(req.body)
+    const collection=await connectBlog()
+    const result=await collection.updateOne({_id:new ObjectId(req.body._id)},{$set:{activeStatus:req.body.activeStatus}})
+    console.log(result)
+    res.send(result)
+})
+
+router.delete('/delete',async (req,res)=>{
     console.log(req.query)
     const collection=await connectBlog()
-    const result=await collection.updateOne({_id:new ObjectId(req.query._id)},{$set:{activeStatus:req.query.activeStatus}})
+    const query = { _id:new ObjectId(req.query._id) };
+    const result=await collection.deleteOne(query)
     console.log(result)
-    res.header("Access-Control-Allow-Origin", "*");
-    res.send('hhh')
+    res.send('删除成功')
 })
 
+// 获取博客详情
 router.get('/detail',async (req,res)=>{
-    const findResults=await postCollection.find({id:Number(req.query.id)}).toArray()
-    const imgURL=await getCoverImgURL(findResults[0].img)
-    findResults[0].imgURL=imgURL
-    res.header("Access-Control-Allow-Origin", "*");
-    res.send(findResults[0])
+    const collection=await connectBlog()
+    const query = { _id:new ObjectId(req.query._id) };
+    const result=await collection.findOne(query)
+    res.send(result)
 })
-
 
 router.get('/list',async (req,res)=>{
     try {
@@ -42,19 +57,18 @@ router.get('/list',async (req,res)=>{
             const res=await getImgURL(blog.cover)
             blog.cover=res
         }))
-        res.header("Access-Control-Allow-Origin", "*");
         res.send(findResults)
     }catch (e) {
     }
 })
 
-router.get('/:postId',async (req,res)=>{
-    const findResults=await postCollection.find({id:Number(req.params.postId)}).toArray()
-    const data=await fsPromises.readFile(findResults[0].path,{flag:'r'})
-    const htmlResult=md.render(data.toString('utf-8'))
-    res.header("Access-Control-Allow-Origin", "*");
-    res.send(htmlResult)
-})
+// router.get('/:postId',async (req,res)=>{
+//     const findResults=await postCollection.find({id:Number(req.params.postId)}).toArray()
+//     const data=await fsPromises.readFile(findResults[0].path,{flag:'r'})
+//     const htmlResult=md.render(data.toString('utf-8'))
+//     res.header("Access-Control-Allow-Origin", "*");
+//     res.send(htmlResult)
+// })
 
 
 
@@ -68,19 +82,18 @@ router.post('/addBlog',upload.any(),async (req,res)=>{
         updateDate:new Date(),
         createTime:new Date(),
         tags:[],
-        activeStatus:req.body.activeStatus,
+        activeStatus:req.body.activeStatus==='true'?true:false,
         cover:req.files[1].originalname
     }
+    console.log(blog)
     try {
         const collection=await connectBlog()
         await collection.insert(blog)
         await uploadBlogBuffer(req.files[0])
         await uploadCoverBuffer(req.files[1])
-        res.header("Access-Control-Allow-Origin", "*")
         res.send('上传成功')
     }catch (e){
         console.log(e.message)
-        res.header("Access-Control-Allow-Origin", "*")
         res.send(e.message)
     }
 
