@@ -4,8 +4,16 @@ const bodyParser = require('body-parser')
 const md=require('../config/md')
 const {connectBlog}=require('../config/db')
 const {getCoverImgURL,list,uploadBlogBuffer,uploadCoverBuffer,getImgURL}=require('../config/oss')
-const {ObjectID, ObjectId} = require("mongodb");
+const { ObjectId} = require("mongodb");
 const router=express.Router()
+
+/*
+* TODO:
+*   1.异常处理
+*   2.代码注释
+*   3.编辑博客信息接口
+*
+* */
 
 const upload=multer({
     fileFilter(req,file,callback){
@@ -14,30 +22,38 @@ const upload=multer({
     },
 })
 
-// status接口处理跨域
-// router.options('/', (req,res)=>{
-//     res.header("Access-Control-Allow-Origin", "*");
-//     res.header("Access-Control-Allow-Methods", "POST,DELETE");
-//     res.header("Access-Control-Allow-Headers", "Content-Type");
-//     res.send()
-// })
-
 
 router.post('/status',bodyParser.json(),async (req,res)=>{
-    console.log(req.body)
     const collection=await connectBlog()
     const result=await collection.updateOne({_id:new ObjectId(req.body._id)},{$set:{activeStatus:req.body.activeStatus}})
-    console.log(result)
     res.send(result)
 })
 
 router.delete('/delete',async (req,res)=>{
-    console.log(req.query)
     const collection=await connectBlog()
     const query = { _id:new ObjectId(req.query._id) };
     const result=await collection.deleteOne(query)
-    console.log(result)
     res.send('删除成功')
+})
+
+router.post('/setting',upload.any(),async (req,res)=>{
+    try {
+        const newSetting={
+            title:req.body.title,
+            category:req.body.category,
+            updateDate:new Date(),
+            activeStatus:req.body.activeStatus==='true'?true:false,
+        }
+        const collection=await connectBlog()
+        if (req.files.length!==0){
+            await uploadCoverBuffer(req.files[0])
+            newSetting.cover=req.files[0].originalname
+        }
+        const result=await collection.updateOne({_id:new ObjectId(req.query._id)},{$set:newSetting})
+        res.send('更新设置成功')
+    }catch (e) {
+        res.send(e.message)
+    }
 })
 
 // 获取博客详情
@@ -45,6 +61,9 @@ router.get('/detail',async (req,res)=>{
     const collection=await connectBlog()
     const query = { _id:new ObjectId(req.query._id) };
     const result=await collection.findOne(query)
+    const URL=await getImgURL(result.cover)
+    result.coverName=result.cover
+    result.cover=URL
     res.send(result)
 })
 
@@ -62,19 +81,8 @@ router.get('/list',async (req,res)=>{
     }
 })
 
-// router.get('/:postId',async (req,res)=>{
-//     const findResults=await postCollection.find({id:Number(req.params.postId)}).toArray()
-//     const data=await fsPromises.readFile(findResults[0].path,{flag:'r'})
-//     const htmlResult=md.render(data.toString('utf-8'))
-//     res.header("Access-Control-Allow-Origin", "*");
-//     res.send(htmlResult)
-// })
-
-
 
 router.post('/addBlog',upload.any(),async (req,res)=>{
-    // const path='./blogs'+req.file.originalname
-    // await fsPromises.writeFile(path,req.file.buffer)
     const blog={
         title:req.body.title,
         name:req.files[0].originalname,
@@ -85,7 +93,6 @@ router.post('/addBlog',upload.any(),async (req,res)=>{
         activeStatus:req.body.activeStatus==='true'?true:false,
         cover:req.files[1].originalname
     }
-    console.log(blog)
     try {
         const collection=await connectBlog()
         await collection.insert(blog)
