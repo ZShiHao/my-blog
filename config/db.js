@@ -36,9 +36,20 @@ async function connectCategory(){
     }
 }
 
+async function connectTags(){
+    try {
+        const db=await connectDb('my-blog')
+        const collection=await db.collection('tags')
+        return collection
+    }catch (e){
+        console.log(e)
+    }
+}
+
 
 module.exports={
     connectDb,
     connectCategory,
-    connectBlog
+    connectBlog,
+    connectTags
 }
