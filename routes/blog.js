@@ -5,13 +5,16 @@ const md=require('../config/md')
 const {connectBlog}=require('../config/db')
 const {getCoverImgURL,list,uploadBlogBuffer,uploadCoverBuffer,getImgURL}=require('../config/oss')
 const { ObjectId} = require("mongodb");
+const moment = require('moment')
+
 const router=express.Router()
 
 /*
 * TODO:
 *   1.异常处理
 *   2.代码注释
-*   3.编辑博客信息接口
+*   3.登录注册
+*   4.添加数据库object mapper
 *
 * */
 
@@ -22,6 +25,8 @@ const upload=multer({
     },
 })
 
+console.log(moment(new Date()).fromNow())
+console.log(new Date())
 
 router.post('/status',bodyParser.json(),async (req,res)=>{
     const collection=await connectBlog()
@@ -75,6 +80,7 @@ router.get('/list',async (req,res)=>{
         await Promise.all(findResults.map(async (blog)=>{
             const res=await getImgURL(blog.cover)
             blog.cover=res
+            blog.createTime=moment(blog.createTime).fromNow()
         }))
         res.send(findResults)
     }catch (e) {
