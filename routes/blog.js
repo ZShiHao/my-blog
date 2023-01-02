@@ -15,6 +15,7 @@ const router=express.Router()
 *   2.代码注释
 *   3.登录注册
 *   4.添加数据库object mapper
+*   5.REST风格API
 *
 * */
 
@@ -25,8 +26,6 @@ const upload=multer({
     },
 })
 
-console.log(moment(new Date()).fromNow())
-console.log(new Date())
 
 router.post('/status',bodyParser.json(),async (req,res)=>{
     const collection=await connectBlog()
@@ -46,6 +45,7 @@ router.post('/setting',upload.any(),async (req,res)=>{
         const newSetting={
             title:req.body.title,
             category:req.body.category,
+            tags: req.body.tags.split(','),
             updateDate:new Date(),
             activeStatus:req.body.activeStatus==='true'?true:false,
         }
@@ -89,13 +89,14 @@ router.get('/list',async (req,res)=>{
 
 
 router.post('/addBlog',upload.any(),async (req,res)=>{
+    console.log(req.body)
     const blog={
         title:req.body.title,
         name:req.files[0].originalname,
         category:req.body.category,
         updateDate:new Date(),
         createTime:new Date(),
-        tags:[],
+        tags:req.body.tags.split(','),
         activeStatus:req.body.activeStatus==='true'?true:false,
         cover:req.files[1].originalname
     }

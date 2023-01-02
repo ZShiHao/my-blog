@@ -49,6 +49,14 @@ async function uploadCoverBuffer(file){
     }
 }
 
+async function uploadBookCoverBuffer(name,buffer){
+    try {
+        const result = await client.put('/imgs/books-cover/'+name, buffer);
+    } catch (e) {
+        console.log(e);
+    }
+}
+
 async function getImgURL(img){
     try {
         const signUrl  = await client.signatureUrl('/imgs/blogs-cover/'+img);
@@ -64,5 +72,6 @@ module.exports={
     getCoverImgURL,
     uploadBlogBuffer,
     uploadCoverBuffer,
-    getImgURL
+    getImgURL,
+    uploadBookCoverBuffer
 }
