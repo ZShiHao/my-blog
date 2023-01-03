@@ -1,5 +1,5 @@
-const OSS=require('ali-oss')
-const secret=require('./secret')
+import OSS  from "ali-oss"
+import secret from './secret.js'
 
 const coverImagsPath='imgs/post-cover/'
 
@@ -66,7 +66,7 @@ async function getImgURL(img){
     }
 }
 
-module.exports={
+export {
     listBuckets,
     list,
     getCoverImgURL,

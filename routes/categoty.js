@@ -1,5 +1,5 @@
-const express=require('express')
-const {connectCategory}=require('../config/db')
+import express from 'express'
+import {connectCategory} from '../config/db.js'
 const router=express.Router()
 
 
@@ -10,4 +10,4 @@ router.get('/',async (req,res)=>{
     res.send(findResults)
 })
 
-module.exports=router
+export default router

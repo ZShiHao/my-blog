@@ -1,10 +1,8 @@
-const express=require('express')
-const cors=require('cors')
-const blog=require('./routes/blog')
-const category=require('./routes/categoty')
-const tags=require('./routes/tags')
-const gm=require('gm').subClass({ imageMagick: '7+' });
-const {uploadBookCoverBuffer}=require('./config/oss')
+import express from 'express'
+import cors from 'cors'
+import blog from './routes/blog.js'
+import category from './routes/categoty.js'
+import tags from './routes/tags.js'
 
 
 const app=express()
@@ -21,9 +19,6 @@ app.use('/tags',tags)
 //     await uploadBookCoverBuffer('hhh.png',buffer)
 //     console.log('done!');
 // })
-
-
-
 
 
 

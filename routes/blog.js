@@ -1,11 +1,10 @@
-const express=require('express')
-const multer=require('multer')
-const bodyParser = require('body-parser')
-const md=require('../config/md')
-const {connectBlog}=require('../config/db')
-const {getCoverImgURL,list,uploadBlogBuffer,uploadCoverBuffer,getImgURL}=require('../config/oss')
-const { ObjectId} = require("mongodb");
-const moment = require('moment')
+import express from 'express'
+import multer from 'multer'
+import bodyParser from 'body-parser'
+import {connectBlog} from '../config/db.js'
+import {getCoverImgURL,list,uploadBlogBuffer,uploadCoverBuffer,getImgURL} from '../config/oss.js'
+import { ObjectId} from  "mongodb"
+import moment from  'moment'
 
 const router=express.Router()
 
@@ -113,4 +112,4 @@ router.post('/addBlog',upload.any(),async (req,res)=>{
 
 })
 
-module.exports=router
+export default router

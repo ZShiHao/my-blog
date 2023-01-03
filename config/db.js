@@ -1,5 +1,5 @@
-const { MongoClient } = require('mongodb');
-const secret=require('./secret')
+import { MongoClient }  from 'mongodb'
+import secret from './secret.js'
 
 const uri = `mongodb://${secret.username}:${secret.password}@47.96.73.47:27017`;
 const client = new MongoClient(uri);
@@ -47,7 +47,7 @@ async function connectTags(){
 }
 
 
-module.exports={
+export {
     connectDb,
     connectCategory,
     connectBlog,

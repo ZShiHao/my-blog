@@ -1,5 +1,5 @@
-const express=require('express')
-const {connectTags}=require('../config/db')
+import express from 'express'
+import {connectTags} from '../config/db.js'
 const router=express.Router()
 
 router.get('/',async (req,res)=>{
@@ -14,4 +14,4 @@ router.get('/',async (req,res)=>{
     }
 })
 
-module.exports=router
+export default router

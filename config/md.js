@@ -1,5 +1,6 @@
-const MarkdownIt = require("markdown-it");
-const hljs = require("highlight.js");
+import MarkdownIt  from "markdown-it"
+import hljs from 'highlight.js'
+
 
 const md = new MarkdownIt({
     html: true,
@@ -16,4 +17,4 @@ const md = new MarkdownIt({
     }
 });
 
-module.exports = md
+export default  md
