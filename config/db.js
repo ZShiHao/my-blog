@@ -1,11 +1,12 @@
 import { MongoClient }  from 'mongodb'
 import secret from './secret.js'
+import mongoose from "mongoose";
 
 const uri = `mongodb://${secret.username}:${secret.password}@47.96.73.47:27017`;
-const client = new MongoClient(uri);
 
 async function connectDb(dbName) {
     try {
+        const client = new MongoClient(uri);
         console.log('开始连接数据库')
         await client.connect();
         console.log("Connected successfully to server");
@@ -46,10 +47,21 @@ async function connectTags(){
     }
 }
 
+async function mongooseConnectDb(dbName){
+    try {
+        const options={
+            dbName
+        }
+        await mongoose.connect(uri,options)
+    }catch (e){
+        console.log(e)
+    }
+}
 
 export {
     connectDb,
     connectCategory,
     connectBlog,
-    connectTags
+    connectTags,
+    mongooseConnectDb
 }
