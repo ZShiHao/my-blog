@@ -3,7 +3,7 @@ const { Schema } = mongoose;
 
 const blogSchema=new Schema({
     title: String,
-    name:{type:[String],index:true},
+    name:{type:String,index:true},
     category:String,
     updateDate:Date,
     createTime:Date,
@@ -12,6 +12,6 @@ const blogSchema=new Schema({
     cover:String,
 })
 
-const Blogs=mongoose.model('blogs',blogSchema)
+// const Blogs=mongoose.model('blogs',blogSchema)
 
-export default Blogs
+export default blogSchema

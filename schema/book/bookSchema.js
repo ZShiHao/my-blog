@@ -15,6 +15,6 @@ const bookSchema=new Schema({
     downloads:Number
 })
 
-const Books=mongoose.model('books',bookSchema)
+// const Books=mongoose.model('books',bookSchema)
 
-export default Books
+export default bookSchema

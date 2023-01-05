@@ -47,12 +47,13 @@ async function connectTags(){
     }
 }
 
-async function mongooseConnectDb(dbName){
+async function mongooseConnectDb(dbName,collection,schema){
     try {
         const options={
             dbName
         }
-        await mongoose.connect(uri,options)
+        const connection=await mongoose.createConnection(uri,options)
+        return connection.model(collection,schema)
     }catch (e){
         console.log(e)
     }

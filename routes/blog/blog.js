@@ -4,7 +4,7 @@ import bodyParser from 'body-parser'
 import {connectBlog,mongooseConnectDb} from '../../config/db.js'
 import {getCoverImgURL,list,uploadBlogBuffer,uploadCoverBuffer,getImgURL} from '../../config/oss.js'
 import { ObjectId} from  "mongodb"
-import Blogs from "../../schema/blog/blog.js";
+import blogSchema from "../../schema/blog/blogSchema.js";
 import moment from  'moment'
 
 const router=express.Router()
@@ -20,6 +20,7 @@ const router=express.Router()
 * */
 
 const dbName='my-blog'
+const collection='blogs'
 
 const upload=multer({
     fileFilter(req,file,callback){
@@ -30,13 +31,14 @@ const upload=multer({
 
 
 router.post('/status',bodyParser.json(),async (req,res)=>{
-    await mongooseConnectDb(dbName)
+    const Blogs=await mongooseConnectDb(dbName,collection,blogSchema)
     const result=await Blogs.updateOne({_id:new ObjectId(req.body._id)},{activeStatus:req.body.activeStatus})
     res.send(result)
 })
 
 router.delete('/delete',async (req,res)=>{await mongooseConnectDb(dbName)
     const query = { _id:new ObjectId(req.query._id) };
+    const Blogs=await mongooseConnectDb(dbName,collection,blogSchema)
     const result=await Blogs.deleteOne(query)
     console.log(result)
     res.send('删除成功')
@@ -51,7 +53,7 @@ router.post('/setting',upload.any(),async (req,res)=>{
             updateDate:new Date(),
             activeStatus:req.body.activeStatus==='true'?true:false,
         }
-        await mongooseConnectDb(dbName)
+        const Blogs=await mongooseConnectDb(dbName,collection,blogSchema)
         if (req.files.length!==0){
             await uploadCoverBuffer(req.files[0])
             newSetting.cover=req.files[0].originalname
@@ -65,7 +67,7 @@ router.post('/setting',upload.any(),async (req,res)=>{
 
 // 获取博客详情
 router.get('/detail',async (req,res)=>{
-    await mongooseConnectDb(dbName)
+    const Blogs=await mongooseConnectDb(dbName,collection,blogSchema)
     const query = { _id:new ObjectId(req.query._id) };
     const result=await Blogs.findOne(query)
     const URL=await getImgURL(result.cover)
@@ -76,7 +78,7 @@ router.get('/detail',async (req,res)=>{
 
 router.get('/list',async (req,res)=>{
     try {
-        await mongooseConnectDb(dbName)
+        const Blogs=await mongooseConnectDb(dbName,collection,blogSchema)
         const findResults=await Blogs.find({})
         // 将cover的图片名转换成图片的访问url
         await Promise.all(findResults.map(async (blog)=>{
@@ -103,7 +105,7 @@ router.post('/addBlog',upload.any(),async (req,res)=>{
         cover:req.files[1].originalname
     }
     try {
-        await mongooseConnectDb(dbName)
+        const Blogs=await mongooseConnectDb(dbName,collection,blogSchema)
         await Blogs.insertMany(blog)
         await uploadBlogBuffer(req.files[0])
         await uploadCoverBuffer(req.files[1])
