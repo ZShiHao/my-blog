@@ -66,6 +66,24 @@ async function getImgURL(img){
     }
 }
 
+async function uploadBook(file){
+    try{
+        const result=await client.put('/books/'+file.originalname,file.buffer)
+        return result
+    }catch(e){
+        return e
+    }
+}
+
+async function uploadBookCover(imgName,buffer){
+    try{
+        const result=await client.put('/imgs/books-cover/'+imgName,buffer)
+        return result
+    }catch(e){
+        return e
+    }
+}
+
 export {
     listBuckets,
     list,
@@ -73,5 +91,7 @@ export {
     uploadBlogBuffer,
     uploadCoverBuffer,
     getImgURL,
-    uploadBookCoverBuffer
+    uploadBookCoverBuffer,
+    uploadBook,
+    uploadBookCover
 }

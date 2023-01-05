@@ -2,10 +2,10 @@ import mongoose from 'mongoose';
 const { Schema } = mongoose;
 
 const bookSchema=new Schema({
-    title: {type:[String],index:true},
+    title: {type:String,index:true},
     createDate:Date,
     cover:String,
-    category:Array,
+    category:String,
     activeStatus:Boolean,
     author:String,
     language:Number,
