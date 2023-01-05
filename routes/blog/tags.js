@@ -1,5 +1,5 @@
 import express from 'express'
-import {connectTags} from '../config/db.js'
+import {connectTags} from '../../config/db.js'
 const router=express.Router()
 
 router.get('/',async (req,res)=>{

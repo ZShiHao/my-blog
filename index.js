@@ -1,8 +1,9 @@
 import express from 'express'
 import cors from 'cors'
-import blog from './routes/blog.js'
-import category from './routes/categoty.js'
-import tags from './routes/tags.js'
+import blog from './routes/blog/blog.js'
+import category from './routes/blog/categoty.js'
+import tags from './routes/blog/tags.js'
+import bookCategory from "./routes/book/bookCategory.js";
 
 
 const app=express()
@@ -12,6 +13,7 @@ app.use(cors())
 app.use('/blog',blog)
 app.use('/category',category)
 app.use('/tags',tags)
+app.use('/books/category',bookCategory)
 
 
 // gm('./JavaScript.pdf[0]').toBuffer('PNG',async function (err, buffer) {

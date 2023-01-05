@@ -1,5 +1,5 @@
 import express from 'express'
-import {connectCategory} from '../config/db.js'
+import {connectCategory} from '../../config/db.js'
 const router=express.Router()
 
 

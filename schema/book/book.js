@@ -8,8 +8,13 @@ const bookSchema=new Schema({
     category:Array,
     activeStatus:Boolean,
     author:String,
+    language:Number,
+    format:String,
+    size:String,
+    pages:String,
+    downloads:Number
 })
 
-const Books=mongoose.model('Books',bookSchema)
+const Books=mongoose.model('books',bookSchema)
 
 export default Books
