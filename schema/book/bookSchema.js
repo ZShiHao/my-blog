@@ -12,7 +12,8 @@ const bookSchema=new Schema({
     format:String,
     size:String,
     pages:String,
-    downloads:Number
+    downloads:Number,
+    fileName:String
 })
 
 // const Books=mongoose.model('books',bookSchema)

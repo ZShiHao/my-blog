@@ -2,7 +2,7 @@ import express from 'express'
 import multer from 'multer'
 import bodyParser from 'body-parser'
 import {connectBlog,mongooseConnectDb} from '../../config/db.js'
-import {getCoverImgURL,list,uploadBlogBuffer,uploadCoverBuffer,getImgURL} from '../../config/oss.js'
+import {getCoverImgURL,list,uploadBlogBuffer,uploadCoverBuffer,getImgURL} from '../../oss/blogsOss.js'
 import { ObjectId} from  "mongodb"
 import blogSchema from "../../schema/blog/blogSchema.js";
 import moment from  'moment'
@@ -82,7 +82,7 @@ router.get('/list',async (req,res)=>{
         const findResults=await Blogs.find({})
         // 将cover的图片名转换成图片的访问url
         await Promise.all(findResults.map(async (blog)=>{
-            const res=await getImgURL(blog.cover)
+            const res=await getImgURL('/imgs/blogs-cover/'+blog.cover)
             blog.cover=res
             blog.createTime=moment(blog.createTime).fromNow()
         }))
