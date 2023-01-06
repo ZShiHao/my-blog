@@ -37,6 +37,17 @@ router.delete('/:_id',async (req,res)=>{
     }
 })
 
+router.get('/book/:_id',async (req,res)=>{
+    try {
+        const Books=await mongooseConnectDb(dbName,collection,bookSchema)
+        const book=await Books.findOne({_id:req.params._id})
+        res.send(book)
+
+    } catch (e) {
+        res.send(e.message)
+    }
+})
+
 router.get('/',async (req,res)=>{
     try{
         const Books=await mongooseConnectDb(dbName,collection,bookSchema)
@@ -112,6 +123,21 @@ router.put('/status/:_id',bodyParser.json(),async (req,res)=>{
         const query={_id:new ObjectId(req.params._id)}
         await Books.updateOne(query,{activeStatus:req.body.activeStatus})
         res.send('激活状态更新')
+    } catch (e) {
+        res.send(e.message)
+    }
+})
+
+router.put('/setting/:_id',bodyParser.json(),async (req,res)=>{
+    try {
+        const Books=await mongooseConnectDb(dbName,collection,bookSchema)
+        const query={_id:new ObjectId(req.params._id)}
+        console.log(req.body)
+        await Books.updateOne(query,req.body)
+        const book=await Books.findOne(query)
+        const coverurl=await getImgURL('/imgs/books-cover/'+book.cover)
+        book.cover=coverurl
+        res.send(book)
     } catch (e) {
         res.send(e.message)
     }
