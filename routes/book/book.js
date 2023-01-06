@@ -123,6 +123,7 @@ router.get('/download/:_id',async (req,res)=>{
         const query={_id:new ObjectId(req.params._id)}
         const book=await Books.findOne(query)
         const downloadUrl=await getBookDownloadURL('/books/'+book.fileName)
+        await Books.updateOne(query,{downloads:book.downloads+1})
         res.send(downloadUrl)
     } catch (e) {
         res.send(e.message)
