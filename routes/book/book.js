@@ -5,7 +5,7 @@ import fs from 'node:fs/promises'
 import {PDFDocument} from "pdf-lib";
 import bodyParser from 'body-parser'
 import {mongooseConnectDb} from '../../config/db.js'
-import {uploadBook,uploadBookCover,getImgURL,deleteBook} from '../../oss/booksOss.js'
+import {uploadBook,uploadBookCover,getImgURL,deleteBook,getBookDownloadURL} from '../../oss/booksOss.js'
 import { ObjectId} from  "mongodb"
 import bookSchema from "../../schema/book/bookSchema.js";
 import bytes from 'bytes'
@@ -102,6 +102,29 @@ router.post('/',upload.any(),async (req,res)=>{
         }
     }catch(e){
         console.log(e)
+        res.send(e.message)
+    }
+})
+
+router.put('/status/:_id',bodyParser.json(),async (req,res)=>{
+    try {
+        const Books=await mongooseConnectDb(dbName,collection,bookSchema)
+        const query={_id:new ObjectId(req.params._id)}
+        await Books.updateOne(query,{activeStatus:req.body.activeStatus})
+        res.send('激活状态更新')
+    } catch (e) {
+        res.send(e.message)
+    }
+})
+
+router.get('/download/:_id',async (req,res)=>{
+    try {
+        const Books=await mongooseConnectDb(dbName,collection,bookSchema)
+        const query={_id:new ObjectId(req.params._id)}
+        const book=await Books.findOne(query)
+        const downloadUrl=await getBookDownloadURL('/books/'+book.fileName)
+        res.send(downloadUrl)
+    } catch (e) {
         res.send(e.message)
     }
 })

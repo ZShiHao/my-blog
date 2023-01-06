@@ -29,12 +29,21 @@ async function uploadBookCover(imgName,buffer){
     }
 }
 
+async function getBookDownloadURL(path){
+    try {
+        const signUrl=await client.signatureUrl(path)
+        return signUrl
+    } catch (e) {
+        return e
+    }
+}
+
 async function getImgURL(path){
     try {
         const signUrl  = await client.signatureUrl(path);
         return signUrl
     }catch (e) {
-
+        return e
     }
 }
 
@@ -42,5 +51,6 @@ export {
     uploadBook,
     uploadBookCover,
     getImgURL,
-    deleteBook
+    deleteBook,
+    getBookDownloadURL
 }
