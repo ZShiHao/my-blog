@@ -48,10 +48,28 @@ router.get('/book/:_id',async (req,res)=>{
     }
 })
 
-router.get('/',async (req,res)=>{
+// 查询图书
+router.get('/',bodyParser.json(),async (req,res)=>{
     try{
+        const urlQuery=req.query
         const Books=await mongooseConnectDb(dbName,collection,bookSchema)
-        const findRes=await Books.find({})
+        let query={}
+        if(Object.keys(urlQuery).length!==0){
+            for(let key in urlQuery){
+                switch (key) {
+                    case 'title': //title支持模糊查询
+                        query[key]={
+                            $regex:new RegExp(urlQuery[key]),
+                            $options:'i'
+                        };
+                        break;
+                    default:
+                        query[key]=urlQuery[key];
+                        break;
+                }
+            }
+        }
+        const findRes=await Books.find(query)
         await Promise.all(findRes.map(async (book)=>{
             try{
                 const coverurl=await getImgURL('/imgs/books-cover/'+book.cover)
