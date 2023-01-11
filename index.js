@@ -5,7 +5,11 @@ import bookRouter from "./routes/book/bookRouter.js";
 import category from './routes/blog/categoty.js'
 import tags from './routes/blog/tags.js'
 import bookCategory from "./routes/book/bookCategory.js";
-
+import * as cheerio from 'cheerio'
+import got from 'got'
+import {HttpsProxyAgent} from "hpagent";
+import puppeteer from "puppeteer";
+import {grabDownloadBooks} from './crawler/crawler.js'
 
 const app=express()
 const port=3000
@@ -19,6 +23,15 @@ app.use('/book_category',bookCategory)
 
 
 
+
+
+
+async function main(){
+    await grabDownloadBooks()
+}
+
+
+main()
 
 
 app.listen(port, () => {
