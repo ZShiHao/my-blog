@@ -2,8 +2,8 @@ import * as cheerio from "cheerio";
 
 
 /**
- * 解析GoodReads搜索结果的图书元信息(20本书一组)
- * @param htmlSegment
+ * 解析html代码段中的图书元信息(20本书一组)
+ * @param htmlSegment {string}
  * @returns {Promise<*[]>}
  */
 async function cheerioParserBooksMetaData(htmlSegment){
