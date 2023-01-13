@@ -1,6 +1,6 @@
-import {cheerioParserBooksMetaData} from "./core/cheerioParser.js";
-import {puppeteerParser} from "./core/puppeteerParser.js";
-import secret from '../config/secret.js'
+import {cheerioParserBooksMetaData} from "./cheerioParser.js";
+import {puppeteerParser} from "./puppeteerParser.js";
+import secret from '../../config/secret.js'
 import got from "got";
 import puppeteer from "puppeteer";
 import queryString from 'query-string'
@@ -17,19 +17,38 @@ import {HttpProxyAgent, HttpsProxyAgent} from "hpagent";
 
 
 /**
- *
- * @param keyword 搜索关键词
- * @returns {Promise<void>}
+ * 根据关键词(分类)收集书名
+ * @param keyword {string}搜索关键词(分类)
+ * @returns {Promise<[String]>} 60本书的书名
  */
 async function grabHighRateBooksName(keyword){
-    let books=null
-    const metaInfoUrl=secret.booksMetaDataSource+keyword
-    const downloadUrl=secret.booksDownloadSource
-    const htmlSegment=await puppeteerParser(metaInfoUrl,'table')
-    books=await cheerioParserBooksMetaData(htmlSegment)
-    books=books.map(book=>{
-
-    })
+    try {
+        let booksTitles=[]
+        for (let i=0;i<=2;i++){
+            const query={
+                q:keyword,
+                page:i+1,
+                tab:'book'
+            }
+            const url=secret.booksMetaDataSource+'search?'+queryString.stringify(query)
+            const {body}=await got(url,{
+                agent:{
+                    https:new HttpsProxyAgent({
+                        proxy:'http://127.0.0.1:7890'
+                    })
+                }
+            })
+            const document=cheerio.load(body)
+            const titleDoms=document('.bookTitle span').toArray()
+            console.log(titleDoms)
+            titleDoms.forEach(titleDom=>{
+                booksTitles.push(titleDom.children[0].data)
+            })
+        }
+        return booksTitles
+    } catch (e) {
+        console.log(e)
+    }
 }
 
 /**
@@ -155,5 +174,6 @@ async function grabPDF(book){
 
 export {
     grabDownloadBooks,
-    grabPDF
+    grabPDF,
+    grabHighRateBooksName
 }

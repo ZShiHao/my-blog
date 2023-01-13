@@ -31,10 +31,17 @@ router.get('/:_id',async (req,res)=>{
     }
 })
 
+// 添加图书分类
 router.post('/',bodyParser.json(),async (req,res)=>{
     try{
         const Categories=await mongooseConnectDb(dbName,collection,categorySchema)
-        await Categories.create(req.body)
+        console.log(req.body)
+        const document={
+            name:req.body.name,
+            sort:0,
+            keys:[{name: req.body.keys.name,crawler:false}]
+        }
+        await Categories.create(document)
         const categories=await Categories.find({})
         res.send(categories)
     }catch(e){
@@ -42,15 +49,23 @@ router.post('/',bodyParser.json(),async (req,res)=>{
     }
 })
 
-// 添加图书分类,子类
+// 添加图书子类
 router.put('/:_id',bodyParser.json(),async (req,res)=>{
     try{
         const Categories=await mongooseConnectDb(dbName,collection,categorySchema)
         const category=await Categories.findOne({_id:new ObjectId(req.params._id)})
-        const newKeys=category.keys.indexOf(req.body.key)===-1
-        if (category.keys.indexOf(req.body.key)===-1){
+
+        let ifHas=false
+        category.keys.forEach((subCategory)=>{
+            subCategory.name===req.body.key?ifHas=true:''
+        })
+        if (!ifHas){
             let newKeys=category.keys
-            newKeys.push(req.body.key)
+            const newsubCategory={
+                name:req.body.key,
+                crawler:false
+            }
+            newKeys.push(newsubCategory)
             await Categories.updateOne({_id:new ObjectId(req.params._id)},{keys:newKeys})
             const subCategory=await Categories.findOne({_id:new ObjectId(req.params._id)})
             res.send(subCategory)
@@ -63,6 +78,8 @@ router.put('/:_id',bodyParser.json(),async (req,res)=>{
     }
 })
 
+
+// 删除分类或者子类
 router.delete('/:_id',async (req,res)=>{
     try {
         const Categories=await mongooseConnectDb(dbName,collection,categorySchema)
@@ -70,9 +87,17 @@ router.delete('/:_id',async (req,res)=>{
         if(req.query.key){
             // 如果有url中有query参数,则是删除子分类
             const category=await Categories.findOne(query)
-            if (category.keys.indexOf(req.query.key)!==-1){
+            let ifHas=false
+            let index=0
+            category.keys.forEach((subCategory,i)=>{
+                if (subCategory.name===req.body.key){
+                    ifHas=true
+                    index=i
+                }
+            })
+            if (ifHas){
                 let newKeys=category.keys
-                newKeys.splice(category.keys.indexOf(req.query.key),1)
+                newKeys.splice(index,0)
                 await Categories.updateOne(query,{keys:newKeys})
                 const subCategory=await Categories.findOne(query)
                 res.send(subCategory)
