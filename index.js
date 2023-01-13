@@ -13,6 +13,8 @@ import fs from 'fs/promises'
 import * as http from "http";
 import {HttpsProxyAgent} from 'hpagent';
 import {puppeteerParser} from "./crawler/core/puppeteerParser.js";
+import {pipeline} from 'node:stream/promises'
+import {client} from "./oss/oss.js";
 
 const app=express()
 const port=3000
@@ -30,34 +32,29 @@ app.use('/book_category',bookCategory)
 
 
 async function main(){
-    console.time('cheerio')
-    const res=await grabHighRateBooksName('JavaScript')
-
-    // const {body}=await got('https://www.goodreads.com/search?page=1&q=JavaScript&tab=books',{
-    //     agent:{
-    //         https:new HttpsProxyAgent({
-    //             proxy:'http://127.0.0.1:7890'
-    //         })
-    //     }
-    // })
-    // const e=cheerio.load(body)
-    // e('.book')
-    console.timeEnd('cheerio')
-    // const books=await grabDownloadBooks('The Principles of Object-Oriented JavaScript')
-    // console.log(books)
-    // const book={
-    //     downloadPage:'https://www.pdfdrive.com/introduction-to-java-programming-comprehensive-version-d169560000.html',
-    //     id:'169560000'
-    // }
-    // await grabPDF(book)
-
-    // const {body}=await got('https://www.pdfdrive.com/thinking-in-java-e158656226.html')
-    // await fs.writeFile('./test.html',body)
-    console.log('123')
+    // const res=grabHighRateBooksName('Java')
+    console.time('下载时间')
+    // const res=await got('https://www.pdfdrive.com/download.pdf?id=158299863&h=47173801a61a856470e6dcb5b91ad897&u=cache&ext=pdf')
+    // await fs.writeFile('./text.pdf',res.rawBody)
+    // console.log(res)
+    try {
+        const readStream=got.stream('https://www.pdfdrive.com/download.pdf?id=180663309&h=41191927a7d7b5d61399e368145a703b&u=cache&ext=pdf')
+        console.log(readStream)
+        const res=await client.putStream('test.pdf',readStream)
+        readStream.on('downloadProgress',async res=>{
+            console.log(res)
+        })
+        console.log(res)
+        // console.log(res)
+        // await fs.writeFile('./test.html',body)
+        console.log('123')
+    } catch (e) {
+        console.log(e)
+    }
+    console.timeEnd('下载时间')
 }
-
-
-// main()
+'https://www.pdfdrive.com/download.pdf?id=158299863&h=47173801a61a856470e6dcb5b91ad897&u=cache&ext=pdf'
+main()
 
 
 app.listen(port, () => {

@@ -8,12 +8,6 @@ import * as cheerio from "cheerio";
 import {HttpProxyAgent, HttpsProxyAgent} from "hpagent";
 
 
-/**
- * TODO:核心流程
- *  1.根据关键词(分类)从booksMetaDataSource抓取每个关键词的高分书籍(主要是书名),每页20本,三页一共60本,books
- *  2.根据书名去booksDownloadSource查询,抓取查询结果图书的原信息(存到本地数据库),根据书名匹配到的关键词个数,只存前五本书
- *  3.用户查询某本书时,先去本地数据库查询,用户点击下载之后,取出该书的下载地址,去爬取这本书到服务器,再通过服务器返回给用户
- */
 
 
 /**
@@ -76,34 +70,38 @@ async function grabDownloadBooks(title){
         //提取搜索的图书信息
         let searchedBooks=await page.$$eval('.files-new .row',(lis)=>{
             const books=[]
-            for (let i=0;i<2;i++){
-                // 只去返回结果的前本书
-                const li=lis[i]
-                const title=li.querySelector('h2')?.innerText
-                const coverUrl=li.querySelector('img')?.src
-                const pages=li.querySelector('.fi-pagecount')?.innerText
-                const published=li.querySelector('.fi-year')?.innerText
-                const size=li.querySelector('.fi-size')?.innerText
-                const id=li.querySelector('a')?.dataset.id
-                const downloadPage=li.querySelector('a')?.href.replace('e'+id,'d'+id)
-                const book={
-                    title,
-                    coverUrl,
-                    pages,
-                    published,
-                    size,
-                    id,
-                    downloadPage,
-                    language:'English'
+            if(lis.length!==0){
+                for (let i=0;i<2;i++){
+                    // 只去返回结果的前本书
+                    const li=lis[i]
+                    const title=li.querySelector('h2')?.innerText
+                    const coverUrl=li.querySelector('img')?.src
+                    const pages=li.querySelector('.fi-pagecount')?.innerText
+                    const published=li.querySelector('.fi-year')?.innerText
+                    const size=li.querySelector('.fi-size')?.innerText
+                    const download=li.querySelector('.fi-hit')?.innerText
+                    const id=li.querySelector('a')?.dataset.id
+                    const downloadPage=li.querySelector('a')?.href.replace('e'+id,'d'+id)
+                    const book={
+                        title,
+                        coverUrl,
+                        pages,
+                        published,
+                        size,
+                        id,
+                        downloadPage,
+                        language:'English'
+                    }
+                    books.push(book)
                 }
-                books.push(book)
             }
             return books
         })
+
+        //给搜索的图书结果添加作者信息
         searchedBooks=await Promise.all(searchedBooks.map(async (book)=>{
             const title=book.title.replaceAll(' ','-')
             const url=secret.booksDownloadSource+title+`-e${book.id}.html`
-            console.log(url)
             const {body} =await got(url)
             let author=''
             let flag=false
@@ -121,6 +119,7 @@ async function grabDownloadBooks(title){
         return searchedBooks
     } catch (e) {
         console.log(e)
+        return e
     }
 }
 
@@ -150,7 +149,6 @@ async function grabPDFSession(url){
  */
 async function grabPDF(book){
     try {
-        console.time('共花费了')
         const sessionID=await grabPDFSession(book.downloadPage)
         const query={
             id:book.id,
@@ -158,15 +156,13 @@ async function grabPDF(book){
             u:'cache',
             ext:'pdf'
         }
-        const res=await got(secret.booksDownloadSource+'/download.pdf?'+queryString.stringify(query),{
-            agent:{
-                http:new HttpProxyAgent({
-                    proxy:'http://109.254.37.40:9090'
-                })
-            }
-        })
+        const res=await got(secret.booksDownloadSource+'/download.pdf?'+queryString.stringify(query))
+        if(res.rawBody.byteLength<=50){
+            return ''
+        }else {
+            return res.rawBody
+        }
         return res
-        console.timeEnd('共花费了')
     } catch (e) {
         console.log(e)
     }

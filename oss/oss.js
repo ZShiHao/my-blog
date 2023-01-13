@@ -5,7 +5,8 @@ const client =new OSS({
     region:'oss-cn-hangzhou',
     accessKeyId:secret.accessKeyId,
     accessKeySecret:secret.accessKeySecret,
-    bucket: 'zhangshihao-blog'
+    bucket: 'zhangshihao-blog',
+    timeout:600000
 })
 
 async function listBuckets() {
@@ -39,6 +40,7 @@ async function getImgURL(path){
 
 
 export {
+    client,
     listBuckets,
     getImgURL,
     uploadBookCoverBuffer,
