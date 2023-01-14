@@ -15,7 +15,8 @@ const pdfBooksSchema=new Schema({
     size:String,
     pages:String,
     downloads:Number,
-    downloadPage:String,
+    downloadPage:String, // download source web book download page
+    downloadUrl:String,  // download source web book download url
     fileName: {type:String,unique: true}  //oss查询用
 })
 

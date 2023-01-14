@@ -48,9 +48,10 @@ async function grabHighRateBooksName(keyword){
 /**
  * 抓取该本书的可下载的pdf
  * @param title {string} 书名
+ * @param subCategory {string} 书的分类
  * @returns {Promise<[{}]>} 两本最匹配的pdf元信息
  */
-async function grabDownloadBooks(title){
+async function grabDownloadBooksInfo(title,subCategory){
     try {
         title=title.replaceAll(' ','+')
         const query={
@@ -85,6 +86,7 @@ async function grabDownloadBooks(title){
                     const book={
                         title,
                         coverUrl,
+                        category:subCategory,
                         pages,
                         published,
                         size,
@@ -143,33 +145,38 @@ async function grabPDFSession(url){
 }
 
 /**
- *
+ * get book's download url , if this book available
  * @param book {Object}
- * @returns {Promise<{body: string, rawBody: } & {requestUrl: URL, redirectUrls: URL[], request: Request, ip?: string, isFromCache: boolean, statusCode: number, url: string, timings: Timings, retryCount: number, rawBody?: , body?: unknown, ok: boolean} & IncomingMessageWithTimings>}
+ * @returns {Promise}
  */
-async function grabPDF(book){
+async function grabBookDownloadUrl(book){
     try {
         const sessionID=await grabPDFSession(book.downloadPage)
-        const query={
+        const {body} =await got(secret.booksDownloadSource+'ebook/broken/?'+queryString.stringify({
             id:book.id,
-            h:sessionID,
-            u:'cache',
-            ext:'pdf'
+            session:sessionID
+        }))
+        // if body html segment has 'Aid' ,meaning this book can be downloaded.
+        if(body.indexOf('AiD')){
+            const query={
+                id:book.id,
+                h:sessionID,
+                u:'cache',
+                ext:'pdf'
+            }
+            const downloadUrl=secret.booksDownloadSource+'/download.pdf?'+queryString.stringify(query)
+            return downloadUrl
+        }else{
+            return false // -1 means this book can't be downloaded
         }
-        const res=await got(secret.booksDownloadSource+'/download.pdf?'+queryString.stringify(query))
-        if(res.rawBody.byteLength<=50){
-            return ''
-        }else {
-            return res.rawBody
-        }
-        return res
     } catch (e) {
         console.log(e)
+        return e
     }
 }
 
 export {
-    grabDownloadBooks,
-    grabPDF,
+    grabDownloadBooksInfo,
+    grabBookDownloadUrl,
     grabHighRateBooksName
 }

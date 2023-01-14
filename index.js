@@ -16,6 +16,8 @@ import {puppeteerParser} from "./crawler/core/puppeteerParser.js";
 import {pipeline} from 'node:stream/promises'
 import {client} from "./oss/oss.js";
 import cliProgress from 'cli-progress'
+import StreamSpeed from 'streamspeed'
+import bytes from "bytes";
 
 const app=express()
 const port=3000
@@ -34,20 +36,7 @@ app.use('/book_category',bookCategory)
 
 async function main(){
     console.time('下载时间')
-    try {
-        const readStream=got.stream('https://www.pdfdrive.com/download.pdf?id=180663309&h=41191927a7d7b5d61399e368145a703b&u=cache&ext=pdf')
-        const bar1=new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
-        readStream.on('response',async res=>{
-            bar1.start(res.headers['content-length'],0)
-        })
-        readStream.on('downloadProgress',async res=>{
-            bar1.update(res.transferred)
-        })
-        const res=await client.putStream('test.pdf',readStream)
-        console.log('123')
-    } catch (e) {
-        console.log(e)
-    }
+
     console.timeEnd('下载时间')
 }
 main()

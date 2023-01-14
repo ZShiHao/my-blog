@@ -31,6 +31,7 @@
     "nodemon": "^2.0.20",
     "pdf-lib": "^1.17.1",
     "puppeteer": "^19.4.1",
-    "query-string": "^8.1.0"
+    "query-string": "^8.1.0",
+    "streamspeed": "^2.0.1"
   }
 }
