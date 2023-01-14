@@ -15,6 +15,7 @@ import {HttpsProxyAgent} from 'hpagent';
 import {puppeteerParser} from "./crawler/core/puppeteerParser.js";
 import {pipeline} from 'node:stream/promises'
 import {client} from "./oss/oss.js";
+import cliProgress from 'cli-progress'
 
 const app=express()
 const port=3000
@@ -32,30 +33,24 @@ app.use('/book_category',bookCategory)
 
 
 async function main(){
-    // const res=grabHighRateBooksName('Java')
     console.time('下载时间')
-    // const res=await got('https://www.pdfdrive.com/download.pdf?id=158299863&h=47173801a61a856470e6dcb5b91ad897&u=cache&ext=pdf')
-    // await fs.writeFile('./text.pdf',res.rawBody)
-    // console.log(res)
     try {
         const readStream=got.stream('https://www.pdfdrive.com/download.pdf?id=180663309&h=41191927a7d7b5d61399e368145a703b&u=cache&ext=pdf')
-        console.log(readStream)
-        const res=await client.putStream('test.pdf',readStream)
-        readStream.on('downloadProgress',async res=>{
-            console.log(res)
+        const bar1=new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
+        readStream.on('response',async res=>{
+            bar1.start(res.headers['content-length'],0)
         })
-        console.log(res)
-        // console.log(res)
-        // await fs.writeFile('./test.html',body)
+        readStream.on('downloadProgress',async res=>{
+            bar1.update(res.transferred)
+        })
+        const res=await client.putStream('test.pdf',readStream)
         console.log('123')
     } catch (e) {
         console.log(e)
     }
     console.timeEnd('下载时间')
 }
-'https://www.pdfdrive.com/download.pdf?id=158299863&h=47173801a61a856470e6dcb5b91ad897&u=cache&ext=pdf'
 main()
-
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
