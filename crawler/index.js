@@ -34,7 +34,7 @@ async function bookDowloadUploadStream(book){
                 speed=StreamSpeed.toHuman(s, { timeUnit: 's' });
             });
             const bar1=new cliProgress.SingleBar({
-                format:'{bar} | {percentage}% | ETA:{eta}s |{valueBytes}/{totalBytes} | Speed: {speed} | {filename}'
+                format:'{bar} | {percentage}%  |{valueBytes}/{totalBytes} | Speed: {speed} | {filename}'
             }, cliProgress.Presets.shades_classic);
             readStream.on('response',async res=>{
                 bar1.start(res.headers['content-length'],0,{
@@ -43,7 +43,7 @@ async function bookDowloadUploadStream(book){
             })
             readStream.on('downloadProgress',async res=>{
                 bar1.update(res.transferred,{
-                    filename:"test.pdf",
+                    filename:book.title,
                     speed:speed,
                     valueBytes:bytes.format(res.transferred),
                     totalBytes:bytes.format(res.total)
@@ -53,8 +53,10 @@ async function bookDowloadUploadStream(book){
             if (res.res.statusCode===200){
                 console.log('成功上传oss')
                 book.fileName=`${book.title}-${book.id}.pdf`
+                bar1.stop();
                 return book
             }else{
+                bar1.stop();
                 return false
             }
         }else {

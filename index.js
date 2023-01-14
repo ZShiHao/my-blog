@@ -8,7 +8,6 @@ import bookCategory from "./routes/book/bookCategory.js";
 import * as cheerio from 'cheerio'
 import got from 'got'
 import puppeteer from "puppeteer";
-import {grabDownloadBooks,grabPDF,grabHighRateBooksName} from './crawler/core/crawler.js'
 import fs from 'fs/promises'
 import * as http from "http";
 import {HttpsProxyAgent} from 'hpagent';
@@ -39,7 +38,7 @@ async function main(){
 
     console.timeEnd('下载时间')
 }
-main()
+// main()
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)

@@ -90,14 +90,15 @@ router.delete('/:_id',async (req,res)=>{
             let ifHas=false
             let index=0
             category.keys.forEach((subCategory,i)=>{
-                if (subCategory.name===req.body.key){
+                if (subCategory.name===req.query.key){
                     ifHas=true
                     index=i
                 }
             })
             if (ifHas){
                 let newKeys=category.keys
-                newKeys.splice(index,0)
+                console.log(newKeys)
+                newKeys.splice(index,1)
                 await Categories.updateOne(query,{keys:newKeys})
                 const subCategory=await Categories.findOne(query)
                 res.send(subCategory)
