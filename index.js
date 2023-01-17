@@ -18,8 +18,10 @@ import cliProgress from 'cli-progress'
 import StreamSpeed from 'streamspeed'
 import bytes from "bytes";
 
+import pdfBooksCrawler from "./crawler/index.js";
+
 const app=express()
-const port=3000
+const port=3100
 
 app.use(cors())
 app.use('/blog',blog)
@@ -34,11 +36,18 @@ app.use('/book_category',bookCategory)
 
 
 async function main(){
-    console.time('下载时间')
-
-    console.timeEnd('下载时间')
+    try {
+        console.time('下载时间')
+        const res=await pdfBooksCrawler({name:'JavaScript'})
+        if (res){
+            console.log(res)
+        }
+        console.timeEnd('下载时间')
+    } catch (e) {
+        console.log(e)
+    }
 }
-// main()
+main()
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)

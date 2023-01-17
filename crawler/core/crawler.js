@@ -61,7 +61,7 @@ async function grabDownloadBooksInfo(title,subCategory){
         }
         const searchUrl=secret.booksDownloadSource+'search?'+queryString.stringify(query)
         const browser=await puppeteer.launch({
-            headless:false
+            headless:true
         })
         //打开搜索页面
         const page=await browser.newPage()
@@ -86,7 +86,6 @@ async function grabDownloadBooksInfo(title,subCategory){
                     const book={
                         title,
                         coverUrl,
-                        category:subCategory,
                         pages,
                         published,
                         size,
@@ -99,12 +98,18 @@ async function grabDownloadBooksInfo(title,subCategory){
             }
             return books
         })
+        await browser.close()
 
         //给搜索的图书结果添加作者信息
+        // http status code 429, too many requests
         searchedBooks=await Promise.all(searchedBooks.map(async (book)=>{
             const title=book.title.replaceAll(' ','-')
             const url=secret.booksDownloadSource+title+`-e${book.id}.html`
-            const {body} =await got(url)
+            const {body} =await got(url,{
+                timeout:{ // set Retry-after
+                    request:30000
+                }
+            })
             let author=''
             let flag=false
             for (let i=body.search('creator');body[i]!=='<';i++){
@@ -116,6 +121,7 @@ async function grabDownloadBooksInfo(title,subCategory){
                 }
             }
             book.author=author
+            book.category=subCategory
             return book
         }))
         return searchedBooks
@@ -155,7 +161,11 @@ async function grabBookDownloadUrl(book){
         const {body} =await got(secret.booksDownloadSource+'ebook/broken/?'+queryString.stringify({
             id:book.id,
             session:sessionID
-        }))
+        }),{
+            timeout:{
+                request:30000
+            }
+        })
         // if body html segment has 'Aid' ,meaning this book can be downloaded.
         if(body.indexOf('AiD')){
             const query={
