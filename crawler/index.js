@@ -26,7 +26,11 @@ const schema=pdfBooksSchema
 async function bookDowloadUploadStream(book){
     try {
         if (book.downloadUrl){
-            const readStream=got.stream(book.downloadUrl)
+            const readStream=got.stream(book.downloadUrl,{
+                timeout:{
+                    request:30000
+                }
+            })
             let ss = new StreamSpeed();
             ss.add(readStream);
             let speed=''
@@ -70,13 +74,13 @@ async function bookDowloadUploadStream(book){
 
 /**
  * crawler core procedure , grabbing books info
- * @param subCategory {string}
+ * @param subCategory {object}
  * @returns {Promise<*>}
  */
 async function pdfBooksCrawler(subCategory){
     try {
         const booksName=await grabHighRateBooksName(subCategory.name) //60
-        const books=[]
+        const books=[] // 120
         await Promise.all(booksName.map(async (bookName)=>{
             const  searchedBooks=await grabDownloadBooksInfo(bookName,subCategory.name)
             searchedBooks.forEach(searchedBook=>{
@@ -109,3 +113,6 @@ async function pdfBooksCrawler(subCategory){
         return e
     }
 }
+
+
+export default pdfBooksCrawler
