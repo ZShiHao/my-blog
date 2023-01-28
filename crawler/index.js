@@ -17,6 +17,7 @@ import pdfBooksSchema from '../schema/book/pdfBooksSchema.js'
 const dbName='share-books'
 const collection='pdfBooks'
 const schema=pdfBooksSchema
+process.setMaxListeners(Infinity);
 
 /**
  * download-upload stream
@@ -80,33 +81,60 @@ async function bookDowloadUploadStream(book){
 async function pdfBooksCrawler(subCategory){
     try {
         const booksName=await grabHighRateBooksName(subCategory.name) //60
+        console.log('booksname',booksName)
         const books=[] // 120
-        await Promise.all(booksName.map(async (bookName)=>{
-            const  searchedBooks=await grabDownloadBooksInfo(bookName,subCategory.name)
+        let tembooksname=booksName.slice(0,1)
+        for (let i=0;i<18;i++){
+            // const  searchedBooks=await new Promise(async (resolve)=>{
+            //     setTimeout(async ()=>{
+            //         console.log('10s了')
+            //         const searchedBooks=await grabDownloadBooksInfo(booksName[i],subCategory.name)
+            //         resolve(searchedBooks)
+            //     },5000)
+            // })
+            console.log(123)
+            const searchedBooks=await grabDownloadBooksInfo(booksName[i],subCategory.name)
+
             searchedBooks.forEach(searchedBook=>{
                 books.push(searchedBook)
             })
-        }))
+        }
+        // await Promise.all(booksName.map(async (bookName)=>{
+        //     // const  searchedBooks=await grabDownloadBooksInfo(bookName,subCategory.name)
+        //     const  searchedBooks=await new Promise(async (resolve)=>{
+        //         setTimeout(async ()=>{
+        //             console.log('10s了')
+        //             const searchedBooks=await grabDownloadBooksInfo(bookName,subCategory.name)
+        //             resolve(searchedBooks)
+        //         },10000)
+        //     })
+        //     searchedBooks.forEach(searchedBook=>{
+        //         books.push(searchedBook)
+        //     })
+        // }))
+        console.log('books',books)
         // add downlaodUrl for every book in books
-        await Promise.all(books.map(async book=>{
-            const downloadUrl=await grabBookDownloadUrl(book)
-            downloadUrl?book.downloadUrl='':book.downloadUrl=downloadUrl
-        }))
-        const PdfBooks=await mongooseConnectDb(dbName,collection,pdfBooksSchema)
-        await Promise.all(books.map(async book=>{
-            const searchedBook=PdfBooks.findOne({id:book.id})
-            // 首先查询数据库看是否已经添加过这本书
-            if (!searchedBook.title){
-                const uploadedBook=await bookDowloadUploadStream(book)
-                if (uploadedBook){
-                    // 添加到数据库中
-                    uploadedBook.createDate=new Date()
-                    uploadedBook.activeStatus=true
-                    uploadedBook.format='pdf'
-                    await PdfBooks.create(uploadedBook)
-                }
-            }
-        }))
+
+
+        // await Promise.all(books.map(async book=>{
+        //     const downloadUrl=await grabBookDownloadUrl(book)
+        //     downloadUrl?book.downloadUrl='':book.downloadUrl=downloadUrl
+        // }))
+        // const PdfBooks=await mongooseConnectDb(dbName,collection,pdfBooksSchema)
+        // await Promise.all(books.map(async book=>{
+        //     const searchedBook=await PdfBooks.findOne({id:book.id})
+        //     // 首先查询数据库看是否已经添加过这本书
+        //     if (!searchedBook.title){
+        //         const uploadedBook=await bookDowloadUploadStream(book)
+        //         if (uploadedBook){
+        //             // 添加到数据库中
+        //             uploadedBook.createDate=new Date()
+        //             uploadedBook.activeStatus=true
+        //             uploadedBook.format='pdf'
+        //             await PdfBooks.create(uploadedBook)
+        //         }
+        //     }
+        // }))
         return true
     } catch (e) {
         console.log(e)

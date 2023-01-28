@@ -34,7 +34,6 @@ async function grabHighRateBooksName(keyword){
             })
             const document=cheerio.load(body)
             const titleDoms=document('.bookTitle span').toArray()
-            console.log(titleDoms)
             titleDoms.forEach(titleDom=>{
                 booksTitles.push(titleDom.children[0].data)
             })
@@ -72,7 +71,8 @@ async function grabDownloadBooksInfo(title,subCategory){
         let searchedBooks=await page.$$eval('.files-new .row',(lis)=>{
             const books=[]
             if(lis.length!==0){
-                for (let i=0;i<2;i++){
+                let endIndex=lis.length<=1?1:2
+                for (let i=0;i<endIndex;i++){
                     // 只去返回结果的前本书
                     const li=lis[i]
                     const title=li.querySelector('h2')?.innerText
@@ -82,6 +82,7 @@ async function grabDownloadBooksInfo(title,subCategory){
                     const size=li.querySelector('.fi-size')?.innerText
                     const download=li.querySelector('.fi-hit')?.innerText
                     const id=li.querySelector('a')?.dataset.id
+                    const detailPage=li.querySelector('a')?.href
                     const downloadPage=li.querySelector('a')?.href.replace('e'+id,'d'+id)
                     const book={
                         title,
@@ -91,6 +92,7 @@ async function grabDownloadBooksInfo(title,subCategory){
                         size,
                         id,
                         downloadPage,
+                        detailPage,
                         language:'English'
                     }
                     books.push(book)
@@ -104,7 +106,7 @@ async function grabDownloadBooksInfo(title,subCategory){
         // http status code 429, too many requests
         searchedBooks=await Promise.all(searchedBooks.map(async (book)=>{
             const title=book.title.replaceAll(' ','-')
-            const url=secret.booksDownloadSource+title+`-e${book.id}.html`
+            const url=book.detailPage
             const {body} =await got(url,{
                 timeout:{ // set Retry-after
                     request:30000
