@@ -17,6 +17,7 @@ import pdfBooksSchema from '../schema/book/pdfBooksSchema.js'
 const dbName='share-books'
 const collection='pdfBooks'
 const schema=pdfBooksSchema
+process.setMaxListeners(Infinity);
 
 /**
  * download-upload stream
@@ -80,33 +81,52 @@ async function bookDowloadUploadStream(book){
 async function pdfBooksCrawler(subCategory){
     try {
         const booksName=await grabHighRateBooksName(subCategory.name) //60
+        console.log('booksname',booksName)
         const books=[] // 120
-        await Promise.all(booksName.map(async (bookName)=>{
-            const  searchedBooks=await grabDownloadBooksInfo(bookName,subCategory.name)
-            searchedBooks.forEach(searchedBook=>{
-                books.push(searchedBook)
-            })
-        }))
-        // add downlaodUrl for every book in books
-        await Promise.all(books.map(async book=>{
-            const downloadUrl=await grabBookDownloadUrl(book)
-            downloadUrl?book.downloadUrl='':book.downloadUrl=downloadUrl
-        }))
-        const PdfBooks=await mongooseConnectDb(dbName,collection,pdfBooksSchema)
-        await Promise.all(books.map(async book=>{
-            const searchedBook=PdfBooks.findOne({id:book.id})
-            // 首先查询数据库看是否已经添加过这本书
-            if (!searchedBook.title){
-                const uploadedBook=await bookDowloadUploadStream(book)
-                if (uploadedBook){
-                    // 添加到数据库中
-                    uploadedBook.createDate=new Date()
-                    uploadedBook.activeStatus=true
-                    uploadedBook.format='pdf'
-                    await PdfBooks.create(uploadedBook)
-                }
+        let booksCount=0
+        let proxyUrl = 'http://127.0.0.1:7890'
+
+        for (let i=0;i<booksName.length;i++){
+            booksCount++
+            if(booksCount===20){ // 每次爬取同时抓取20本书 ,60本书分三次
+                booksCount=0
+                await Promise.all(booksName.slice(i,i+20).map(async (bookName,index)=>{
+                    const  searchedBooks=await grabDownloadBooksInfo(bookName,subCategory.name)
+                    searchedBooks.forEach(searchedBook=>{
+                        books.push(searchedBook)
+                    })
+                }))
             }
+        }
+
+
+        // add downlaodUrl for every book in books
+
+        await Promise.all(books.slice(0,30).map(async book=>{
+            const downloadUrl=await grabBookDownloadUrl(book)
+            book.downloadUrl=downloadUrl?downloadUrl:''
         }))
+        await Promise.all(books.slice(30,books.length).map(async book=>{
+            const downloadUrl=await grabBookDownloadUrl(book)
+            book.downloadUrl=downloadUrl?downloadUrl:''
+        }))
+        console.log('books',books)
+
+        // const PdfBooks=await mongooseConnectDb(dbName,collection,pdfBooksSchema)
+        // await Promise.all(books.map(async book=>{
+        //     const searchedBook=await PdfBooks.findOne({id:book.id})
+        //     // 首先查询数据库看是否已经添加过这本书
+        //     if (!searchedBook.title){
+        //         const uploadedBook=await bookDowloadUploadStream(book)
+        //         if (uploadedBook){
+        //             // 添加到数据库中
+        //             uploadedBook.createDate=new Date()
+        //             uploadedBook.activeStatus=true
+        //             uploadedBook.format='pdf'
+        //             await PdfBooks.create(uploadedBook)
+        //         }
+        //     }
+        // }))
         return true
     } catch (e) {
         console.log(e)

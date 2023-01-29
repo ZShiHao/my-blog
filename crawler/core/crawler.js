@@ -6,6 +6,7 @@ import puppeteer from "puppeteer";
 import queryString from 'query-string'
 import * as cheerio from "cheerio";
 import {HttpProxyAgent, HttpsProxyAgent} from "hpagent";
+import fs from 'fs/promises'
 
 
 
@@ -34,7 +35,6 @@ async function grabHighRateBooksName(keyword){
             })
             const document=cheerio.load(body)
             const titleDoms=document('.bookTitle span').toArray()
-            console.log(titleDoms)
             titleDoms.forEach(titleDom=>{
                 booksTitles.push(titleDom.children[0].data)
             })
@@ -66,13 +66,14 @@ async function grabDownloadBooksInfo(title,subCategory){
         //打开搜索页面
         const page=await browser.newPage()
         await page.goto(searchUrl,{
-            timeout:60000
+            timeout:120000
         })
         //提取搜索的图书信息
         let searchedBooks=await page.$$eval('.files-new .row',(lis)=>{
             const books=[]
             if(lis.length!==0){
-                for (let i=0;i<2;i++){
+                let endIndex=lis.length<=1?1:2
+                for (let i=0;i<endIndex;i++){
                     // 只去返回结果的前本书
                     const li=lis[i]
                     const title=li.querySelector('h2')?.innerText
@@ -82,6 +83,7 @@ async function grabDownloadBooksInfo(title,subCategory){
                     const size=li.querySelector('.fi-size')?.innerText
                     const download=li.querySelector('.fi-hit')?.innerText
                     const id=li.querySelector('a')?.dataset.id
+                    const detailPage=li.querySelector('a')?.href
                     const downloadPage=li.querySelector('a')?.href.replace('e'+id,'d'+id)
                     const book={
                         title,
@@ -91,6 +93,7 @@ async function grabDownloadBooksInfo(title,subCategory){
                         size,
                         id,
                         downloadPage,
+                        detailPage,
                         language:'English'
                     }
                     books.push(book)
@@ -101,13 +104,15 @@ async function grabDownloadBooksInfo(title,subCategory){
         await browser.close()
 
         //给搜索的图书结果添加作者信息
-        // http status code 429, too many requests
+
         searchedBooks=await Promise.all(searchedBooks.map(async (book)=>{
             const title=book.title.replaceAll(' ','-')
-            const url=secret.booksDownloadSource+title+`-e${book.id}.html`
+            const url=book.detailPage
             const {body} =await got(url,{
-                timeout:{ // set Retry-after
-                    request:30000
+                agent:{
+                    https:new HttpsProxyAgent({
+                        proxy:'http://127.0.0.1:7890'
+                    })
                 }
             })
             let author=''
@@ -133,7 +138,13 @@ async function grabDownloadBooksInfo(title,subCategory){
 
 async function grabPDFSession(url){
     try {
-        const {body}=await got(url)
+        const {body}=await got(url,{
+            agent:{
+                https:new HttpsProxyAgent({
+                    proxy:'http://127.0.0.1:7890'
+                })
+            }
+        })
         let n=0
         let sessionID=''
         for (let i=body.indexOf('session');n<2;i++){
@@ -162,8 +173,10 @@ async function grabBookDownloadUrl(book){
             id:book.id,
             session:sessionID
         }),{
-            timeout:{
-                request:30000
+            agent:{
+                https:new HttpsProxyAgent({
+                    proxy:'http://127.0.0.1:7890'
+                })
             }
         })
         // if body html segment has 'Aid' ,meaning this book can be downloaded.
