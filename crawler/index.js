@@ -83,43 +83,35 @@ async function pdfBooksCrawler(subCategory){
         const booksName=await grabHighRateBooksName(subCategory.name) //60
         console.log('booksname',booksName)
         const books=[] // 120
-        let tembooksname=booksName.slice(0,1)
-        for (let i=0;i<18;i++){
-            // const  searchedBooks=await new Promise(async (resolve)=>{
-            //     setTimeout(async ()=>{
-            //         console.log('10s了')
-            //         const searchedBooks=await grabDownloadBooksInfo(booksName[i],subCategory.name)
-            //         resolve(searchedBooks)
-            //     },5000)
-            // })
-            console.log(123)
-            const searchedBooks=await grabDownloadBooksInfo(booksName[i],subCategory.name)
+        let booksCount=0
+        let proxyUrl = 'http://127.0.0.1:7890'
 
-            searchedBooks.forEach(searchedBook=>{
-                books.push(searchedBook)
-            })
+        for (let i=0;i<booksName.length;i++){
+            booksCount++
+            if(booksCount===20){ // 每次爬取同时抓取20本书 ,60本书分三次
+                booksCount=0
+                await Promise.all(booksName.slice(i,i+20).map(async (bookName,index)=>{
+                    const  searchedBooks=await grabDownloadBooksInfo(bookName,subCategory.name)
+                    searchedBooks.forEach(searchedBook=>{
+                        books.push(searchedBook)
+                    })
+                }))
+            }
         }
-        // await Promise.all(booksName.map(async (bookName)=>{
-        //     // const  searchedBooks=await grabDownloadBooksInfo(bookName,subCategory.name)
-        //     const  searchedBooks=await new Promise(async (resolve)=>{
-        //         setTimeout(async ()=>{
-        //             console.log('10s了')
-        //             const searchedBooks=await grabDownloadBooksInfo(bookName,subCategory.name)
-        //             resolve(searchedBooks)
-        //         },10000)
-        //     })
-        //     searchedBooks.forEach(searchedBook=>{
-        //         books.push(searchedBook)
-        //     })
-        // }))
-        console.log('books',books)
+
+
         // add downlaodUrl for every book in books
 
+        await Promise.all(books.slice(0,30).map(async book=>{
+            const downloadUrl=await grabBookDownloadUrl(book)
+            book.downloadUrl=downloadUrl?downloadUrl:''
+        }))
+        await Promise.all(books.slice(30,books.length).map(async book=>{
+            const downloadUrl=await grabBookDownloadUrl(book)
+            book.downloadUrl=downloadUrl?downloadUrl:''
+        }))
+        console.log('books',books)
 
-        // await Promise.all(books.map(async book=>{
-        //     const downloadUrl=await grabBookDownloadUrl(book)
-        //     downloadUrl?book.downloadUrl='':book.downloadUrl=downloadUrl
-        // }))
         // const PdfBooks=await mongooseConnectDb(dbName,collection,pdfBooksSchema)
         // await Promise.all(books.map(async book=>{
         //     const searchedBook=await PdfBooks.findOne({id:book.id})
