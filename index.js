@@ -2,6 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import blog from './routes/blog/blog.js'
 import bookRouter from "./routes/book/bookRouter.js";
+import pdfBooksRouter from "./routes/book/pdfBooksRouter.js";
 import category from './routes/blog/categoty.js'
 import tags from './routes/blog/tags.js'
 import bookCategory from "./routes/book/bookCategory.js";
@@ -21,11 +22,12 @@ import bytes from "bytes";
 import pdfBooksCrawler from "./crawler/index.js";
 
 const app=express()
-const port=3100
+const port=3000
 
 app.use(cors())
 app.use('/blog',blog)
 app.use('/books',bookRouter)
+app.use('/pdfbooks',pdfBooksRouter)
 app.use('/category',category)
 app.use('/tags',tags)
 app.use('/book_category',bookCategory)
