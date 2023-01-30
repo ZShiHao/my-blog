@@ -7,6 +7,7 @@ import queryString from 'query-string'
 import * as cheerio from "cheerio";
 import {HttpProxyAgent, HttpsProxyAgent} from "hpagent";
 import fs from 'fs/promises'
+import { Base64 } from 'js-base64';
 
 
 
@@ -127,6 +128,12 @@ async function grabDownloadBooksInfo(title,subCategory){
             }
             book.author=author
             book.category=subCategory
+            book.uploaded=false
+            book.fileName=book.title+'('+book.id+')'+'.pdf'
+            book.activeStatus=false
+            book.format='PDF'
+            book.downloads=1
+            book.createDate=new Date()
             return book
         }))
         return searchedBooks
@@ -166,16 +173,20 @@ async function grabPDFSession(url){
  * @param book {Object}
  * @returns {Promise}
  */
-async function grabBookDownloadUrl(book){
+// 'https://www.pdfdrive.com/ebook/broken/?id=158130659&session=bfda74ab195c2f6bb9b563deb4e2a375'
+async function grabBookDownloadUrl(book,index,proxyUrl){
     try {
         const sessionID=await grabPDFSession(book.downloadPage)
         const {body} =await got(secret.booksDownloadSource+'ebook/broken/?'+queryString.stringify({
             id:book.id,
             session:sessionID
         }),{
+            // headers:{
+            //     'Proxy-Authorization':'Basic '+Base64.encode('zhangshihaovv:'+'rb29otm3')
+            // },
             agent:{
                 https:new HttpsProxyAgent({
-                    proxy:'http://127.0.0.1:7890'
+                    proxy:proxyUrl
                 })
             }
         })
@@ -193,8 +204,8 @@ async function grabBookDownloadUrl(book){
             return false // -1 means this book can't be downloaded
         }
     } catch (e) {
-        console.log(e)
-        return e
+        // 如果有异常,返回该书的索引,重新抓取
+        return index
     }
 }
 

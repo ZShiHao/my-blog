@@ -23,6 +23,7 @@
     "got": "^12.5.3",
     "highlight.js": "^11.7.0",
     "hpagent": "^1.2.0",
+    "js-base64": "^3.7.4",
     "markdown-it": "^13.0.1",
     "moment": "^2.29.4",
     "mongodb": "^4.12.1",

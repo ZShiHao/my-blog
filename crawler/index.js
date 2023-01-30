@@ -99,20 +99,36 @@ async function pdfBooksCrawler(subCategory){
             }
         }
 
-
         // add downlaodUrl for every book in books
+        let fraction=7
+        const retryList=[]
+        for (let i=0;i<fraction;i++){
+            // 减少抓取频率
+            let n=Math.floor(books.length/fraction)
+            let endIndex=i===fraction-1?books.length:(i+1)*n
+            const body={code:1}
+            await Promise.all(books.slice(i*n,endIndex).map(async (book,index)=>{
+                const downloadUrl=await grabBookDownloadUrl(book,i*n+index,body.code!==0?'http://127.0.0.1:7890':`http://${body.data['proxy_list'][0]}`)
+                if(typeof downloadUrl === 'number'){
+                    retryList.push(downloadUrl)
+                }else {
+                    book.downloadUrl=downloadUrl?downloadUrl:''
+                }
+            }))
+        }
+        // 抓取失败的图书,重新抓取
+        await Promise.all(retryList.map(async (i)=>{
+            const res=await got('https://dps.kdlapi.com/api/getdps/?secret_id=odguag6up032vkdprhxb&num=1&signature=o62sb2wv4lh8jxwtzeoiyyimd0&pt=1&format=json&sep=1')
+            const body=JSON.parse(res.body)
+            const downloadUrl=await grabBookDownloadUrl(books[i],i,body.code!==0?'http://127.0.0.1:7890':`http://${body.data['proxy_list'][0]}`)
+            books[i].downloadUrl=downloadUrl?downloadUrl:''
+        }))
 
-        await Promise.all(books.slice(0,30).map(async book=>{
-            const downloadUrl=await grabBookDownloadUrl(book)
-            book.downloadUrl=downloadUrl?downloadUrl:''
-        }))
-        await Promise.all(books.slice(30,books.length).map(async book=>{
-            const downloadUrl=await grabBookDownloadUrl(book)
-            book.downloadUrl=downloadUrl?downloadUrl:''
-        }))
+        const PdfBooks=await mongooseConnectDb(dbName,collection,pdfBooksSchema)
+        const re=await PdfBooks.create(books)
+        console.log(re)
         console.log('books',books)
 
-        // const PdfBooks=await mongooseConnectDb(dbName,collection,pdfBooksSchema)
         // await Promise.all(books.map(async book=>{
         //     const searchedBook=await PdfBooks.findOne({id:book.id})
         //     // 首先查询数据库看是否已经添加过这本书
