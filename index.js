@@ -18,6 +18,8 @@ import {client} from "./oss/oss.js";
 import cliProgress from 'cli-progress'
 import StreamSpeed from 'streamspeed'
 import bytes from "bytes";
+import secret from './config/secret.js'
+
 
 import pdfBooksCrawler from "./crawler/index.js";
 
@@ -40,7 +42,7 @@ app.use('/book_category',bookCategory)
 async function main(){
     try {
         console.time('下载时间')
-        const res=await pdfBooksCrawler({name:'JavaScript'})
+        const res=await pdfBooksCrawler({name:'Design Patterns'})
         if (res){
             console.log(res)
         }
@@ -49,7 +51,11 @@ async function main(){
         console.log(e)
     }
 }
+async function test(){
+
+}
 main()
+// test()
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
