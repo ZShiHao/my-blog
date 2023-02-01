@@ -54,7 +54,7 @@ async function main(){
 async function test(){
 
 }
-main()
+// main()
 // test()
 
 app.listen(port, () => {
