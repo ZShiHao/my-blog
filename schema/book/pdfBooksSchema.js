@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import mongoosePaginate  from 'mongoose-paginate-v2';
 const { Schema } = mongoose;
 
 const pdfBooksSchema=new Schema({
@@ -20,6 +21,7 @@ const pdfBooksSchema=new Schema({
     uploaded:Boolean,
     fileName: {type:String,unique: true}  //oss查询用
 })
+pdfBooksSchema.plugin(mongoosePaginate)
 
 
 export default pdfBooksSchema

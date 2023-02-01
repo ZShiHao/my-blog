@@ -14,7 +14,15 @@ router.get('/',async (req,res)=>{
     try{
         const Categories=await mongooseConnectDb(dbName,collection,categorySchema)
         const result=await Categories.find({})
-        res.send(result)
+        console.log(result)
+        const resBody={
+            code:200,
+            message:'成功了',
+            data:{
+                categories:result
+            },
+        }
+        res.send(resBody)
     }catch(e){
         res.send(e.message)
     }
