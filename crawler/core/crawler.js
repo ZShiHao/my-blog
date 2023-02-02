@@ -8,8 +8,13 @@ import * as cheerio from "cheerio";
 import {HttpProxyAgent, HttpsProxyAgent} from "hpagent";
 import fs from 'fs/promises'
 import { Base64 } from 'js-base64';
-
-
+import StreamSpeed from "streamspeed";
+import cliProgress from "cli-progress";
+import bytes from "bytes";
+import {client} from "../../oss/oss.js";
+import urllib from 'urllib';
+// const Duplex = require("stream").Duplex;
+import {Duplex,Writable } from 'stream'
 
 
 /**
@@ -209,8 +214,76 @@ async function grabBookDownloadUrl(book,index,proxyUrl){
     }
 }
 
+/**
+ * download-upload stream
+ * @param book {object}
+ * @returns {Promise<boolean|*>} true:uploaded false:upload failed
+ */
+async function bookDowloadUploadStream(book){
+    try {
+        if (book.downloadUrl){
+            const readStream=got.stream(book.downloadUrl,{
+                timeout:{
+                    request:30000
+                },
+                agent:{
+                    https:new HttpsProxyAgent({
+                        proxy:'http://127.0.0.1:7890'
+                    })
+                }
+            })
+            // console.log(readStream)
+            let ss = new StreamSpeed();
+            ss.add(readStream);
+            let speed=''
+            ss.on('speed', (s) => {
+                speed=StreamSpeed.toHuman(s, { timeUnit: 's' });
+            });
+            const bar1=new cliProgress.SingleBar({
+                format:'{bar} | {percentage}%  |{valueBytes}/{totalBytes} | Speed: {speed} | {filename}'
+            }, cliProgress.Presets.shades_classic);
+            readStream.on('response',async res=>{
+                bar1.start(res.headers['content-length'],0,{
+                    speed: "N/A"
+                })
+            })
+            readStream.on('downloadProgress',async res=>{
+                bar1.update(res.transferred,{
+                    filename:book.title,
+                    speed:speed,
+                    valueBytes:bytes.format(res.transferred),
+                    totalBytes:bytes.format(res.total)
+                })
+            })
+            let buf=await new Promise(function (resolve,reject){
+                const _buf = [];
+
+                readStream.on("data", (chunk) => _buf.push(chunk));
+                readStream.on("end", () => resolve(Buffer.concat(_buf)));
+                readStream.on("error", (err) => reject(err));
+            })
+            console.log('putstream')
+            const res=await client.put(`pdfBooks/${book.fileName}`,buf)
+            if (res.res.statusCode===200){
+                console.log('成功上传oss')
+                bar1.stop();
+                return true
+            }else{
+                bar1.stop();
+                return false
+            }
+        }else {
+            return false
+        }
+    } catch (e) {
+        console.log(e)
+        return e
+    }
+}
+
 export {
     grabDownloadBooksInfo,
     grabBookDownloadUrl,
-    grabHighRateBooksName
+    grabHighRateBooksName,
+    bookDowloadUploadStream
 }
