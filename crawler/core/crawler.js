@@ -220,11 +220,11 @@ async function grabBookDownloadUrl(book,index,proxyUrl){
  * @returns {Promise<boolean|*>} true:uploaded false:upload failed
  */
 async function bookDowloadUploadStream(book){
-    try {
+    // try {
         if (book.downloadUrl){
             const readStream=got.stream(book.downloadUrl,{
                 timeout:{
-                    request:30000
+                    request:600000
                 },
                 agent:{
                     https:new HttpsProxyAgent({
@@ -275,10 +275,10 @@ async function bookDowloadUploadStream(book){
         }else {
             return false
         }
-    } catch (e) {
-        console.log(e)
-        return e
-    }
+    // } catch (e) {
+    //     console.log(e)
+    //     return e
+    // }
 }
 
 export {

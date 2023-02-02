@@ -71,4 +71,22 @@ router.put('/upload/:id',async (req,res)=>{
     }
 })
 
+router.post('/status/:id',async  (req,res)=>{
+    try {
+        const PdfBooks=await mongooseConnectDb(dbName,collection,pdfBooksSchema)
+        const searchedBook=await PdfBooks.findOne({id:req.params.id})
+        await PdfBooks.updateOne({id:req.params.id},{activeStatus:!searchedBook.activeStatus})
+        res.send({
+            code:200,
+            message:'更新状态成功'
+        })
+    } catch (e) {
+        res.send({
+            code:500,
+            message:e.message
+        })
+        console.log(e)
+    }
+})
+
 export default router
