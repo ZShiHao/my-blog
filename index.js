@@ -22,6 +22,8 @@ import secret from './config/secret.js'
 
 
 import pdfBooksCrawler from "./crawler/index.js";
+import {mongooseConnectDb} from "./config/db.js";
+import pdfBooksSchema from "./schema/book/pdfBooksSchema.js";
 
 const app=express()
 const port=3000
@@ -35,6 +37,8 @@ app.use('/tags',tags)
 app.use('/book_category',bookCategory)
 
 
+const dbName='share-books'
+const collection='pdfbooks'
 
 
 
@@ -52,6 +56,10 @@ async function main(){
     }
 }
 async function test(){
+    const PdfBooks=await mongooseConnectDb(dbName,collection,pdfBooksSchema)
+    await PdfBooks.updateMany({},{
+        activeStatus:true
+    })
 
 }
 // main()

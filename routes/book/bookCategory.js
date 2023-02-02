@@ -14,7 +14,6 @@ router.get('/',async (req,res)=>{
     try{
         const Categories=await mongooseConnectDb(dbName,collection,categorySchema)
         const result=await Categories.find({})
-        console.log(result)
         const resBody={
             code:200,
             message:'成功了',
