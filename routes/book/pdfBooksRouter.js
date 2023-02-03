@@ -3,7 +3,7 @@ import pdfBooksSchema from "../../schema/book/pdfBooksSchema.js";
 import {mongooseConnectDb} from '../../config/db.js'
 import categoty from "../blog/categoty.js";
 import {bookDowloadUploadStream} from '../../crawler/core/crawler.js'
-
+import {client} from "../../oss/oss.js";
 
 
 const router=express.Router()
@@ -37,6 +37,40 @@ router.get('/',async (req,res)=>{
         res.send(resBody)
     } catch (e) {
         res.send(e.message)
+    }
+})
+
+router.get('/:id',async (req,res)=>{
+    try {
+        const PdfBooks=await mongooseConnectDb(dbName,collection,pdfBooksSchema)
+        const book=await  PdfBooks.findOne({id:req.params.id})
+        let resBody=null
+        if (book.uploaded){
+            const url=client.signatureUrl('pdfBooks/'+book.fileName,{
+                expires:1800 //30分钟
+            })
+            resBody={
+                code:200,
+                message:'授权下载',
+                data: {
+                    url
+                }
+            }
+            await PdfBooks.updateOne({id:req.params.id},{downloads:book.downloads++})
+        }else {
+            resBody={
+                code:404,
+                message:'当前文件不存在'
+            }
+        }
+        res.send(resBody)
+    } catch (e) {
+        const resBody={
+            code:500,
+            message:e.message
+        }
+        res.send(resBody)
+
     }
 })
 
@@ -86,6 +120,29 @@ router.post('/status/:id',async  (req,res)=>{
             message:e.message
         })
         console.log(e)
+    }
+})
+
+
+router.delete('/:id',async (req,res)=>{
+    try {
+        const PdfBooks=await mongooseConnectDb(dbName,collection,pdfBooksSchema)
+        const query={
+            id:req.params.id
+        }
+        await PdfBooks.deleteOne(query)
+        const resBody={
+            code:200,
+            message:'删除成功'
+        }
+        res.send(resBody)
+    } catch (e) {
+        const resBody={
+            code:500,
+            message:e.message
+        }
+        console.log(e)
+        res.send(resBody)
     }
 })
 
