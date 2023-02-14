@@ -56,7 +56,7 @@ router.get('/:id',async (req,res)=>{
                     url
                 }
             }
-            await PdfBooks.updateOne({id:req.params.id},{downloads:book.downloads++})
+            await PdfBooks.updateOne({id:req.params.id},{downloads:++book.downloads})
         }else {
             resBody={
                 code:404,

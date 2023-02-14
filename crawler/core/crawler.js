@@ -243,6 +243,8 @@ async function bookDowloadUploadStream(book){
                 format:'{bar} | {percentage}%  |{valueBytes}/{totalBytes} | Speed: {speed} | {filename}'
             }, cliProgress.Presets.shades_classic);
             readStream.on('response',async res=>{
+                console.log(res)
+                // console.log('size',res.headers['content-length'])
                 bar1.start(res.headers['content-length'],0,{
                     speed: "N/A"
                 })
@@ -262,16 +264,24 @@ async function bookDowloadUploadStream(book){
                 readStream.on("end", () => resolve(Buffer.concat(_buf)));
                 readStream.on("error", (err) => reject(err));
             })
-            console.log('putstream')
-            const res=await client.put(`pdfBooks/${book.fileName}`,buf)
-            if (res.res.statusCode===200){
-                console.log('成功上传oss')
-                bar1.stop();
-                return true
-            }else{
+            // console.log('putstream')
+            if (buf.length<=94){
+                // 下载地址失效
+                console.log('下载链接不可用')
                 bar1.stop();
                 return false
+            }else {
+                const res=await client.put(`pdfBooks/${book.fileName}`,buf)
+                if (res.res.statusCode===200){
+                    console.log('成功上传oss')
+                    bar1.stop();
+                    return true
+                }else{
+                    bar1.stop();
+                    return false
+                }
             }
+
         }else {
             return false
         }
