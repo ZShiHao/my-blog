@@ -243,7 +243,6 @@ async function bookDowloadUploadStream(book){
                 format:'{bar} | {percentage}%  |{valueBytes}/{totalBytes} | Speed: {speed} | {filename}'
             }, cliProgress.Presets.shades_classic);
             readStream.on('response',async res=>{
-                console.log(res)
                 // console.log('size',res.headers['content-length'])
                 bar1.start(res.headers['content-length'],0,{
                     speed: "N/A"

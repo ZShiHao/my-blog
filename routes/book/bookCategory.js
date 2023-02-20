@@ -1,7 +1,7 @@
 import express from 'express'
 import {mongooseConnectDb} from '../../config/db.js'
 import bodyParser from 'body-parser'
-import categorySchema from "../../schema/book/categorySchema.js";
+import categorySchema from "../../schema/category/categorySchema.js";
 import {ObjectId} from "mongodb";
 
 const router=express.Router()
