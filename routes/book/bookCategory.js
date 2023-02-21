@@ -6,22 +6,40 @@ import {ObjectId} from "mongodb";
 
 const router=express.Router()
 
-const dbName='share-books'
+let dbName='share-books'
 const collection='categories'
 
-
-router.get('/',async (req,res)=>{
-    try{
-        const Categories=await mongooseConnectDb(dbName,collection,categorySchema)
-        const result=await Categories.find({})
+/**
+ * 中间件,判断是my-books还是share-books
+ */
+router.use((req,res,next)=>{
+    if (!req.query.type){
         const resBody={
-            code:200,
-            message:'成功了',
-            data:{
-                categories:result
-            },
+            code:400,
+            message:'请传输正确的参数',
         }
         res.send(resBody)
+    }else{
+        dbName=req.query.type==0?'my-books':'share-books'
+        next()
+    }
+})
+
+/**
+ * type:0 my-books 1 share-books
+ */
+router.get('/',async (req,res)=>{
+    try{
+            const Categories=await mongooseConnectDb(dbName,collection,categorySchema)
+            const result=await Categories.find({})
+            const resBody={
+                code:200,
+                message:'成功了',
+                data:{
+                    categories:result
+                },
+            }
+            res.send(resBody)
     }catch(e){
         res.send(e.message)
     }
