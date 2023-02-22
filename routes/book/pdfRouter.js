@@ -1,7 +1,7 @@
 import express from 'express'
 import pdfBooksSchema from "../../schema/book/pdfBooksSchema.js";
 import {mongooseConnectDb} from '../../config/db.js'
-import categoty from "../blog/categoty.js";
+import categoty from "../category/blogCategoty.js";
 import {bookDowloadUploadStream} from '../../crawler/core/crawler.js'
 import {client} from "../../oss/oss.js";
 

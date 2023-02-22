@@ -2,10 +2,10 @@ import express from 'express'
 import cors from 'cors'
 import blog from './routes/blog/blog.js'
 import bookRouter from "./routes/book/bookRouter.js";
-import pdfBooksRouter from "./routes/book/pdfBooksRouter.js";
-import category from './routes/blog/categoty.js'
+import pdfBooksRouter from "./routes/book/pdfRouter.js";
+import category from './routes/category/blogCategoty.js'
 import tags from './routes/blog/tags.js'
-import bookCategory from "./routes/book/bookCategory.js";
+import bookCategory from "./routes/category/bookCategory.js";
 import * as cheerio from 'cheerio'
 import got from 'got'
 import puppeteer from "puppeteer";
