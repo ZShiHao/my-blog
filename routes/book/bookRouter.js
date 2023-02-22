@@ -31,9 +31,17 @@ router.delete('/:_id',async (req,res)=>{
         const book=await Books.findOne(query)
         await deleteBook(book.fileName)
         await Books.deleteOne(query)
-        res.send('删除成功')
+        const resBody={
+            code:200,
+            message:'删除成功'
+        }
+        res.send(resBody)
     }catch(e){
-        res.send(e.message)
+        const resBody={
+            code:500,
+            message:e.message
+        }
+        res.send(resBody)
     }
 })
 
@@ -41,10 +49,19 @@ router.get('/book/:_id',async (req,res)=>{
     try {
         const Books=await mongooseConnectDb(dbName,collection,bookSchema)
         const book=await Books.findOne({_id:req.params._id})
-        res.send(book)
+        const resBody={
+            code:200,
+            message:'删除成功',
+            data:book
+        }
+        res.send(resBody)
 
     } catch (e) {
-        res.send(e.message)
+        const resBody={
+            code:500,
+            message:e.message
+        }
+        res.send(resBody)
     }
 })
 
@@ -78,9 +95,18 @@ router.get('/',bodyParser.json(),async (req,res)=>{
                 return book
             }
         }))
-        res.send(findRes)
+        const resBody={
+            code:200,
+            message:'删除成功',
+            data:findRes
+        }
+        res.send(resBody)
     }catch(e){
-        res.send(e.message)
+        const resBody={
+            code:500,
+            message:e.message
+        }
+        res.send(resBody)
     }
 })
 
@@ -121,17 +147,32 @@ router.post('/',upload.any(),async (req,res)=>{
                         fileName:file.originalname
                     }
                     await Books.create(book)
-                    res.send('成功')
+                    const resBody={
+                        code:200,
+                        message:'成功',
+                    }
+                    res.send(resBody)
                 }catch(e){
-                    res.send(e.message)
+                    const resBody={
+                        code:500,
+                        message:e.message
+                    }
+                    res.send(resBody)
                 }
             })
         }else{
-            res.send('没有收到上传的文件,请重新上传')
+            const resBody={
+                code:500,
+                message:'没有收到上传的文件,请重新上传'
+            }
+            res.send(resBody)
         }
     }catch(e){
-        console.log(e)
-        res.send(e.message)
+        const resBody={
+            code:500,
+            message:e.message
+        }
+        res.send(resBody)
     }
 })
 
@@ -140,9 +181,17 @@ router.put('/status/:_id',bodyParser.json(),async (req,res)=>{
         const Books=await mongooseConnectDb(dbName,collection,bookSchema)
         const query={_id:new ObjectId(req.params._id)}
         await Books.updateOne(query,{activeStatus:req.body.activeStatus})
-        res.send('激活状态更新')
+        const resBody={
+            code:200,
+            message:'激活状态已更新'
+        }
+        res.send(resBody)
     } catch (e) {
-        res.send(e.message)
+        const resBody={
+            code:500,
+            message:e.message
+        }
+        res.send(resBody)
     }
 })
 
@@ -155,9 +204,18 @@ router.put('/setting/:_id',bodyParser.json(),async (req,res)=>{
         const book=await Books.findOne(query)
         const coverurl=await getImgURL('/imgs/books-cover/'+book.cover)
         book.cover=coverurl
-        res.send(book)
+        const resBody={
+            code:200,
+            message:'成功',
+            data:book
+        }
+        res.send(resBody)
     } catch (e) {
-        res.send(e.message)
+        const resBody={
+            code:500,
+            message:e.message
+        }
+        res.send(resBody)
     }
 })
 
@@ -168,9 +226,18 @@ router.get('/download/:_id',async (req,res)=>{
         const book=await Books.findOne(query)
         const downloadUrl=await getBookDownloadURL('/books/'+book.fileName)
         await Books.updateOne(query,{downloads:book.downloads+1})
-        res.send(downloadUrl)
+        const resBody={
+            code:200,
+            message:'成功',
+            data:downloadUrl
+        }
+        res.send(resBody)
     } catch (e) {
-        res.send(e.message)
+        const resBody={
+            code:500,
+            message:e.message
+        }
+        res.send(resBody)
     }
 })
 
