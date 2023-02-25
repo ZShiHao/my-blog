@@ -21,7 +21,7 @@ router.get('/',async (req,res)=>{
         }:{}
         const paginationOptions={
             page:req.query.page,
-            limit:20,
+            limit:req.query.pageSize,
         }
         const findRes=await PdfBooks.paginate(query,paginationOptions)
         const resBody={

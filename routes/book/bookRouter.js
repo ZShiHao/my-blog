@@ -70,7 +70,13 @@ router.get('/',bodyParser.json(),async (req,res)=>{
     try{
         const urlQuery=req.query
         const Books=await mongooseConnectDb(dbName,collection,bookSchema)
-        let query={}
+        const query=req.query.category?{
+            category:req.query.category
+        }:{}
+        const paginationOptions={
+            page:req.query.page,
+            limit:req.query.pageSize,
+        }
         if(Object.keys(urlQuery).length!==0){
             for(let key in urlQuery){
                 switch (key) {
@@ -86,8 +92,8 @@ router.get('/',bodyParser.json(),async (req,res)=>{
                 }
             }
         }
-        const findRes=await Books.find(query)
-        await Promise.all(findRes.map(async (book)=>{
+        const findRes=await Books.paginate(query,paginationOptions)
+        await Promise.all(findRes.docs.map(async (book)=>{
             try{
                 const coverurl=await getImgURL('/imgs/books-cover/'+book.cover)
                 book.cover=coverurl
@@ -98,7 +104,12 @@ router.get('/',bodyParser.json(),async (req,res)=>{
         const resBody={
             code:200,
             message:'删除成功',
-            data:findRes
+            data:{
+                page: req.params.page,
+                totalPages:findRes.totalPages,
+                totalCount:findRes.totalDocs,
+                books:findRes.docs
+            },
         }
         res.send(resBody)
     }catch(e){
