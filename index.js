@@ -6,6 +6,7 @@ import pdfBooksRouter from "./routes/book/pdfRouter.js";
 import category from './routes/category/blogCategoty.js'
 import tags from './routes/blog/tags.js'
 import bookCategory from "./routes/category/bookCategory.js";
+import userRouter from "./routes/user/userRouter.js";
 import * as cheerio from 'cheerio'
 import got from 'got'
 import puppeteer from "puppeteer";
@@ -35,6 +36,7 @@ app.use('/pdfbooks',pdfBooksRouter)
 app.use('/category',category)
 app.use('/tags',tags)
 app.use('/book_category',bookCategory)
+app.use('/user',userRouter)
 
 
 const dbName='share-books'
