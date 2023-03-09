@@ -7,6 +7,7 @@ import category from './routes/category/blogCategoty.js'
 import tags from './routes/blog/tags.js'
 import bookCategory from "./routes/category/bookCategory.js";
 import userRouter from "./routes/user/userRouter.js";
+import authorization from "./middleware/authorization.js";
 import * as cheerio from 'cheerio'
 import got from 'got'
 import puppeteer from "puppeteer";
@@ -30,13 +31,14 @@ const app=express()
 const port=3000
 
 app.use(cors())
+app.use('/user',userRouter)
+app.use(authorization)
 app.use('/blog',blog)
 app.use('/books',bookRouter)
 app.use('/pdfbooks',pdfBooksRouter)
 app.use('/category',category)
 app.use('/tags',tags)
 app.use('/book_category',bookCategory)
-app.use('/user',userRouter)
 
 
 const dbName='share-books'
