@@ -5,7 +5,7 @@ import bodyParser from "body-parser";
 import jwt from 'jsonwebtoken'
 import secret from "../../config/secret.js";
 import redisClient from "../../config/redis.js";
-
+import authorization from "../../middleware/authorization.js";
 const router=express.Router()
 
 const dbName='user'
@@ -148,7 +148,7 @@ router.post('/login',bodyParser.json(),async (req,res)=>{
 })
 
 //用户退出登录
-router.post('/logout',bodyParser.json(),async (req,res)=>{
+router.post('/logout',authorization,bodyParser.json(),async (req,res)=>{
     try {
         const decoded=jwt.verify(req.body.access_token,secret.privateKey)
         let key
@@ -161,7 +161,6 @@ router.post('/logout',bodyParser.json(),async (req,res)=>{
         }
         await redisClient.connect()
         const val=await redisClient.del(key)
-        console.log(val)
         await redisClient.disconnect()
         const resBody={
             code:200,

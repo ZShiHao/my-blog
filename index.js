@@ -32,7 +32,7 @@ const port=3000
 
 app.use(cors())
 app.use('/user',userRouter)
-app.use(authorization)
+app.use(authorization) //鉴权中间件
 app.use('/blog',blog)
 app.use('/books',bookRouter)
 app.use('/pdfbooks',pdfBooksRouter)
